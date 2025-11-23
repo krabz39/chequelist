@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChequeSet Terminal</title>
+
+<script src="https://unpkg.com/lightweight-charts@4.2.1/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+:root {
+    --bg-dark:#05090c;
+    --bg-panel:#0c1218;
+    --bg-panel-2:#0e1923;
+    --bg-chart:#0b141d;
+    --bg-chart-inner:#070c11;
+
+    --text:#d9d9d9;
+    --text-soft:#9bbcc9;
+
+    --acc:#14d2b8;
+    --acc-soft:rgba(20,210,184,0.20);
+
+    --danger:#c0392b;
+    --warn:#f1c40f;
+
+    --sidebar-width:300px;
+}
+
+/* =============================
+   GLOBAL
+============================= */
+body{
+    margin:0;
+    padding:0;
+    background:var(--bg-dark);
+    color:var(--text);
+    font-family:Inter,sans-serif;
+    overflow:hidden;
+}
+
+#app{
+    display:grid;
+    grid-template-columns:var(--sidebar-width) 1fr 350px;
+    height:100vh;
+    width:100vw;
+}
+
+/* =============================
+   SIDEBAR (PRO)
+============================= */
+#sidebar{
+    background:linear-gradient(180deg,#0d1822,#0a1116,#091015);
+    padding:18px;
+    border-right:1px solid rgba(255,255,255,0.06);
+    overflow-y:auto;
+    box-shadow:0 0 25px rgba(0,0,0,0.5);
+    backdrop-filter:blur(4px);
+    border-radius:0 10px 10px 0;
+}
+
+#sidebar h2{
+    font-weight:600;
+    color:var(--acc);
+    margin-top:0;
+    margin-bottom:15px;
+    font-size:20px;
+}
+
+.category{
+    margin-top:18px;
+    margin-bottom:8px;
+    font-size:13px;
+    letter-spacing:1px;
+    opacity:0.6;
+    text-transform:uppercase;
+}
+
+.instrument{
+    padding:10px 12px;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    cursor:pointer;
+    font-size:15px;
+    transition:0.25s ease;
+    border-radius:6px;
+}
+.instrument:hover{
+    background:rgba(20,210,184,0.08);
+    color:var(--acc);
+    padding-left:18px;
+}
+.instrument.active{
+    background:rgba(20,210,184,0.16);
+    color:var(--acc);
+    border-left:3px solid var(--acc);
+    padding-left:18px;
+}
+
+/* =============================
+   CHART AREA (PRO)
+============================= */
+#chartArea{
+    padding:20px;
+    background:var(--bg-chart);
+    position:relative;
+    border-radius:10px;
+}
+#chart{
+    height:78vh;
+    background:var(--bg-chart-inner);
+    border-radius:10px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+#timeframes{
+    margin-top:12px;
+}
+#timeframes button{
+    background:#0f1821;
+    color:var(--text-soft);
+    border:1px solid #1d2c38;
+    padding:6px 12px;
+    border-radius:6px;
+    margin-right:6px;
+    cursor:pointer;
+    transition:0.2s;
+    font-size:14px;
+}
+#timeframes button:hover{
+    background:rgba(20,210,184,0.18);
+}
+#timeframes button.active{
+    color:white;
+    background:var(--acc);
+    border-color:var(--acc);
+}
+
+/* =============================
+   DASHBOARD PRO PANEL
+============================= */
+#dashboard{
+    background:linear-gradient(180deg,#0f1b26,#0c1218);
+    border-left:1px solid rgba(255,255,255,0.06);
+    padding:22px;
+    overflow-y:auto;
+    box-shadow:-5px 0 25px rgba(0,0,0,0.35);
+    border-radius:10px 0 0 10px;
+}
+
+#dashboard h2{
+    margin-top:0;
+    color:var(--acc);
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.2px;
+}
+
+/* SCORE */
+.bigScore{
+    font-size:72px;
+    font-weight:800;
+    color:var(--acc);
+    text-shadow:0 0 25px var(--acc-soft);
+    margin-bottom:10px;
+    animation:glow 2s infinite ease-in-out;
+}
+@keyframes glow{
+    0%{ text-shadow:0 0 8px var(--acc-soft); }
+    50%{ text-shadow:0 0 25px var(--acc-soft); }
+    100%{ text-shadow:0 0 8px var(--acc-soft); }
+}
+
+/* VERDICT BADGE */
+#verdict{
+    font-size:17px;
+    padding:12px;
+    border-radius:8px;
+    background:#132028;
+    margin-bottom:24px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+/* METRICS */
+.metric{
+    margin-bottom:15px;
+    padding:14px;
+    background:var(--bg-panel-2);
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.05);
+    transition:0.25s ease;
+    box-shadow:0 0 12px rgba(0,0,0,0.25);
+}
+.metric:hover{
+    background:#14232f;
+    border-left:4px solid var(--acc);
+}
+
+.metric strong{
+    display:block;
+    font-size:13px;
+    opacity:0.75;
+}
+.metric span{
+    font-size:22px;
+    font-weight:700;
+    color:var(--acc);
+    letter-spacing:0.4px;
+}
+
+/* =============================
+   MOBILE
+============================= */
+@media(max-width:1100px){
+    #app{ grid-template-columns:var(--sidebar-width) 1fr; }
+}
+@media(max-width:800px){
+    #app{ grid-template-columns:1fr; }
+    #sidebar{
+        position:fixed;
+        top:0; left:0;
+        width:260px;
+        height:100%;
+        transform:translateX(-100%);
+        z-index:10000;
+        transition:0.3s;
+    }
+    #hamburger{
+        display:block;
+        position:fixed;
+        top:15px; left:15px;
+        font-size:30px;
+        cursor:pointer;
+        z-index:10001;
+        color:white;
+    }
+    #chart{ height:70vh; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="hamburger" style="display:none;">☰</div>
+
+<audio id="snd_checkmate" src="/static/sounds/checkmate.wav"></audio>
+<audio id="snd_warning"   src="/static/sounds/warning.wav"></audio>
+<audio id="snd_error"     src="/static/sounds/error.wav"></audio>
+
+<div id="alertBox"></div>
+
+<div id="app">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <h2>Markets</h2>
+        <div class="category">FOREX MAJORS</div>
+        <div class="instrument active" data-map="XAU/USD">XAUUSD</div>
+        <div class="instrument" data-map="EUR/USD">EURUSD</div>
+        <div class="instrument" data-map="GBP/USD">GBPUSD</div>
+        <div class="instrument" data-map="USD/JPY">USDJPY</div>
+        <div class="instrument" data-map="USD/CAD">USDCAD</div>
+        <div class="instrument" data-map="USD/CHF">USDCHF</div>
+
+        <div class="category">INDICES</div>
+        <div class="instrument" data-map="US30">US30</div>
+        <div class="instrument" data-map="NAS100">NAS100</div>
+        <div class="instrument" data-map="SPX500">SPX500</div>
+        <div class="instrument" data-map="GER40">GER40</div>
+
+        <div class="category">CRYPTO</div>
+        <div class="instrument" data-map="BTC/USD">BTCUSD</div>
+        <div class="instrument" data-map="ETH/USD">ETHUSD</div>
+
+        <div class="category">SYNTHETICS</div>
+        <div class="instrument" data-map="R_75">VIX75</div>
+        <div class="instrument" data-map="R_100">Volatility100</div>
+        <div class="instrument" data-map="BOOM1000">Boom1000</div>
+        <div class="instrument" data-map="CRASH1000">Crash1000</div>
+    </div>
+
+    <!-- CHART AREA -->
+    <div id="chartArea">
+        <div id="loader">LOADING...</div>
+        <div id="chart"></div>
+
+        <div id="timeframes">
+            <button class="tf-btn active" data-tf="1min">1min</button>
+            <button class="tf-btn" data-tf="5min">5min</button>
+            <button class="tf-btn" data-tf="15min">15min</button>
+            <button class="tf-btn" data-tf="30min">30min</button>
+            <button class="tf-btn" data-tf="1h">1h</button>
+            <button class="tf-btn" data-tf="4h">4h</button>
+        </div>
+
+        <div id="timer" style="margin-top:10px;">0:00</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+
+        <h2>ChequeSet Score</h2>
+
+        <div class="bigScore" id="scoreValue">--</div>
+        <div id="verdict">Waiting...</div>
+
+        <!-- METRICS -->
+        <div class="metric"><strong>Trend Strength</strong><span id="m_trend">--</span></div>
+        <div class="metric"><strong>Momentum (QQE)</strong><span id="m_momentum">--</span></div>
+        <div class="metric"><strong>Arrow Signals</strong><span id="m_arrows">--</span></div>
+        <div class="metric"><strong>Liquidity Quality</strong><span id="m_liquidity">--</span></div>
+        <div class="metric"><strong>Market Structure</strong><span id="m_structure">--</span></div>
+        <div class="metric"><strong>Order Blocks</strong><span id="m_ob">--</span></div>
+        <div class="metric"><strong>BOS / CHOCH</strong><span id="m_bos">--</span></div>
+        <div class="metric"><strong>Candle Timing</strong><span id="m_time">--</span></div>
+        <div class="metric"><strong>Market Bias</strong><span id="m_bias">--</span></div>
+        <div class="metric"><strong>Risk Meter</strong><span id="m_risk">--</span></div>
+        <div class="metric"><strong>Session Strength</strong><span id="m_session">--</span></div>
+
+    </div>
+
+</div>
+
+<!-- ENGINE FILES -->
+<script src="/static/core/ama.js"></script>
+<script src="/static/core/qqe.js"></script>
+<script src="/static/core/arrows.js"></script>
+<script src="/static/core/liquidity.js"></script>
+<script src="/static/core/trendStructure.js"></script>
+<script src="/static/core/orderBlocks.js"></script>
+<script src="/static/core/breakerStructure.js"></script>
+<script src="/static/core/scoring.js"></script>
+<script src="/static/core/chartEngine.js"></script>
+<script src="/static/core/liquidityStructureRenderer.js"></script>
+<script src="/static/core/orderBlockRenderer.js"></script>
+<script src="/static/core/bosChochRenderer.js"></script>
+<script src="/static/core/candleTimer.js"></script>
+
+<script>
+let currentSymbol="XAU/USD";
+let currentTF="1min";
+
+async function fetchCandles(){
+    try{
+        const r=await fetch(`/api/candles?symbol=${encodeURIComponent(currentSymbol)}&tf=${currentTF}`);
+        return await r.json();
+    }catch{
+        return [];
+    }
+}
+
+async function updateChart(){
+    const candles=await fetchCandles();
+    if(candles.length<5) return;
+
+    updateCandles(candles);
+
+    let ama = calculateAMA(candles);
+    let qqe = calculateQQE(candles);
+    let arrows = calculateArrows(candles);
+    let liq = detectLiquidity(candles);
+
+    m_trend.textContent = getAMATrend(ama);
+    m_momentum.textContent = getQQEState(qqe);
+    m_arrows.textContent = arrows.length;
+    m_liquidity.textContent = liq.fvg.length + liq.eqh.length + liq.eql.length;
+    m_structure.textContent = detectStructure(candles).length;
+    m_ob.textContent = detectOrderBlocks(candles).length;
+    m_bos.textContent = detectBOSCHOCH(candles).length;
+    m_time.textContent = "OK";
+    m_bias.textContent = getAMATrend(ama)==="up" ? "Bullish" : "Bearish";
+    m_risk.textContent = qqe.length>0 ? "Normal" : "--";
+    m_session.textContent = "Active";
+
+    let score = calculateScore(
+        getAMATrend(ama),
+        getQQEState(qqe),
+        arrows,
+        liq,
+        true
+    );
+
+    scoreValue.textContent=score;
+
+    if(score>=80){
+        verdict.textContent="CHECKMATE: TRADE VALID";
+        verdict.style.background= "#14d2b8";
+        verdict.style.color="black";
+    } else if(score>=60){
+        verdict.textContent="High Risk – WAIT";
+        verdict.style.background= "#f1c40f";
+        verdict.style.color="black";
+    } else {
+        verdict.textContent="NO TRADE";
+        verdict.style.background= "#c0392b";
+        verdict.style.color="white";
+    }
+}
+
+document.querySelectorAll(".instrument").forEach(el=>{
+    el.onclick=()=>{
+        document.querySelectorAll(".instrument").forEach(i=>i.classList.remove("active"));
+        el.classList.add("active");
+        currentSymbol=el.dataset.map;
+        clearChart();
+        updateChart();
+    };
+});
+
+document.querySelectorAll(".tf-btn").forEach(btn=>{
+    btn.onclick=()=>{
+        document.querySelectorAll(".tf-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentTF=btn.dataset.tf;
+        clearChart();
+        updateChart();
+    };
+});
+
+initChart("chart");
+setInterval(updateChart,1500);
+updateChart();
+</script>
+
+</body>
+</html>
