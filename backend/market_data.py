@@ -1,7 +1,8 @@
 # backend/market_data.py
 
 import requests
-from config import TWELVEDATA_API_KEY, TWELVEDATA_BASE
+from backend.config import TWELVEDATA_API_KEY, TWELVEDATA_BASE
+
 
 def get_twelvedata(symbol, timeframe, length=500):
     params = {
