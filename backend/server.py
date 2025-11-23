@@ -4,8 +4,9 @@ from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 import os
 
-from market_data import get_twelvedata
-from deriv_ws import subscribe_ticks
+from backend.market_data import get_twelvedata
+from backend.deriv_ws import subscribe_ticks
+
 
 # ---------------------------------------------------
 # DETECT ROOT PROJECT FOLDER (chequeset/)
