@@ -2,7 +2,8 @@
 
 import json
 import websocket
-from config import DERIV_APP_ID, DERIV_WS_URL
+from backend.config import DERIV_APP_ID, DERIV_WS_URL
+
 
 def subscribe_ticks(symbol):
     ws = websocket.WebSocket()
